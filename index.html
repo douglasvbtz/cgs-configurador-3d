@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurador 3D - CGS Pedidos</title>
+    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 { color: #333; font-size: 1.4rem; margin-bottom: 5px; }
+        p { color: #666; font-size: 0.9rem; margin-bottom: 20px; }
+        model-viewer {
+            width: 100%;
+            max-width: 650px;
+            height: 480px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+        }
+        .panel {
+            margin-top: 20px;
+            background: #fff;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+            max-width: 600px;
+        }
+        .grupo {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .grupo span {
+            font-weight: bold;
+            color: #444;
+            font-size: 0.9rem;
+        }
+        .botoes { display: flex; gap: 8px; flex-wrap: wrap; }
+        button {
+            padding: 8px 14px;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.85rem;
+            transition: transform 0.1s, opacity 0.2s;
+        }
+        button:hover { opacity: 0.9; transform: scale(1.03); }
+    </style>
+</head>
+<body>
+
+    <h1>Configurador 3D - Cadeira Margot</h1>
+    <p>Arraste para girar em 360º, role para dar zoom e teste os acabamentos abaixo.</p>
+
+    <model-viewer id="configurador"
+                  src="cadeiramargot.glb"
+                  ar
+                  camera-controls
+                  shadow-intensity="1">
+    </model-viewer>
+
+    <div class="panel">
+        <div class="grupo">
+            <span>Revestimento (Tecido):</span>
+            <div class="botoes">
+                <button style="background:#d9d2c5; color:#222;" onclick="mudarCor('*', [0.98, 0.97, 0.96, 1])">Bouclé Cru</button>
+                <button style="background:#8c3b2b;" onclick="mudarCor('*', [0.55, 0.23, 0.17, 1])">Terracota</button>
+                <button style="background:#3a4f41;" onclick="mudarCor('*', [0.22, 0.31, 0.25, 1])">Verde Musgo</button>
+                <button style="background:#2b303a;" onclick="mudarCor('*', [0.17, 0.19, 0.23, 1])">Azul Marinho</button>
+            </div>
+        </div>
+
+        <div class="grupo">
+            <span>Acabamento (Madeira):</span>
+            <div class="botoes">
+                <button style="background:#c19a6b;" onclick="mudarMadeira([0.75, 0.60, 0.42, 1])">Tauari Natural</button>
+                <button style="background:#825039;" onclick="mudarMadeira([0.51, 0.31, 0.22, 1])">Freijó</button>
+                <button style="background:#4a2e22;" onclick="mudarMadeira([0.29, 0.18, 0.13, 1])">Imbuia</button>
+                <button style="background:#1c1c1c;" onclick="mudarMadeira([0.11, 0.11, 0.11, 1])">Laca Preta</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const modelViewer = document.querySelector('#configurador');
+
+        function mudarCor(nomeMaterial, rgba) {
+            if (!modelViewer.model) return;
+            const material = modelViewer.model.materials.find(m => m.name === nomeMaterial);
+            if (material) {
+                material.pbrMetallicRoughness.setBaseColorFactor(rgba);
+            }
+        }
+
+        function mudarMadeira(rgba) {
+            // Aplica nos dois slots de madeira mapeados no bloco do SketchUp
+            mudarCor('*1', rgba);
+            mudarCor('*2', rgba);
+        }
+    </script>
+
+</body>
+</html>
