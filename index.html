@@ -16,11 +16,32 @@
             align-items: center;
         }
         h1 { color: #333; font-size: 1.4rem; margin-bottom: 5px; }
-        p { color: #666; font-size: 0.9rem; margin-bottom: 20px; }
+        p { color: #666; font-size: 0.9rem; margin-bottom: 15px; }
+
+        /* Seletor de Produto */
+        .seletor-produto {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .btn-modelo {
+            padding: 10px 20px;
+            background-color: #e9ecef;
+            color: #333;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-modelo.ativo {
+            background-color: #212529;
+            color: #fff;
+        }
+
         model-viewer {
             width: 100%;
             max-width: 650px;
-            height: 480px;
+            height: 450px;
             background-color: #ffffff;
             border-radius: 12px;
             box-shadow: 0 6px 15px rgba(0,0,0,0.08);
@@ -50,7 +71,7 @@
             font-size: 0.9rem;
         }
         .botoes { display: flex; gap: 8px; flex-wrap: wrap; }
-        button {
+        .botoes button {
             padding: 8px 14px;
             color: white;
             border: none;
@@ -60,13 +81,19 @@
             font-size: 0.85rem;
             transition: transform 0.1s, opacity 0.2s;
         }
-        button:hover { opacity: 0.9; transform: scale(1.03); }
+        .botoes button:hover { opacity: 0.9; transform: scale(1.03); }
     </style>
 </head>
 <body>
 
-    <h1>Configurador 3D - Cadeira Margot</h1>
-    <p>Arraste para girar em 360º, role para dar zoom e teste os acabamentos abaixo.</p>
+    <h1 id="titulo-produto">Configurador 3D - Cadeira Margot</h1>
+    <p>Escolha o modelo e teste as combinações de revestimento e madeira.</p>
+
+    <!-- Abas de troca de modelo -->
+    <div class="seletor-produto">
+        <button id="tab-margot" class="btn-modelo ativo" onclick="selecionarModelo('cadeiramargot.glb', 'Cadeira Margot', this)">Cadeira Margot</button>
+        <button id="tab-loft" class="btn-modelo" onclick="selecionarModelo('cadeiraloft.glb', 'Cadeira Loft', this)">Cadeira Loft</button>
+    </div>
 
     <model-viewer id="configurador"
                   src="cadeiramargot.glb"
@@ -79,20 +106,20 @@
         <div class="grupo">
             <span>Revestimento (Tecido):</span>
             <div class="botoes">
-                <button style="background:#d9d2c5; color:#222;" onclick="mudarCor('*', [0.98, 0.97, 0.96, 1])">Bouclé Cru</button>
-                <button style="background:#8c3b2b;" onclick="mudarCor('*', [0.55, 0.23, 0.17, 1])">Terracota</button>
-                <button style="background:#3a4f41;" onclick="mudarCor('*', [0.22, 0.31, 0.25, 1])">Verde Musgo</button>
-                <button style="background:#2b303a;" onclick="mudarCor('*', [0.17, 0.19, 0.23, 1])">Azul Marinho</button>
+                <button style="background:#d9d2c5; color:#222;" onclick="aplicarTecido([0.98, 0.97, 0.96, 1])">Bouclé Cru</button>
+                <button style="background:#8c3b2b;" onclick="aplicarTecido([0.55, 0.23, 0.17, 1])">Terracota</button>
+                <button style="background:#3a4f41;" onclick="aplicarTecido([0.22, 0.31, 0.25, 1])">Verde Musgo</button>
+                <button style="background:#2b303a;" onclick="aplicarTecido([0.17, 0.19, 0.23, 1])">Azul Marinho</button>
             </div>
         </div>
 
         <div class="grupo">
             <span>Acabamento (Madeira):</span>
             <div class="botoes">
-                <button style="background:#c19a6b;" onclick="mudarMadeira([0.75, 0.60, 0.42, 1])">Tauari Natural</button>
-                <button style="background:#825039;" onclick="mudarMadeira([0.51, 0.31, 0.22, 1])">Freijó</button>
-                <button style="background:#4a2e22;" onclick="mudarMadeira([0.29, 0.18, 0.13, 1])">Imbuia</button>
-                <button style="background:#1c1c1c;" onclick="mudarMadeira([0.11, 0.11, 0.11, 1])">Laca Preta</button>
+                <button style="background:#c19a6b;" onclick="aplicarMadeira([0.75, 0.60, 0.42, 1])">Tauari Natural</button>
+                <button style="background:#825039;" onclick="aplicarMadeira([0.51, 0.31, 0.22, 1])">Freijó</button>
+                <button style="background:#4a2e22;" onclick="aplicarMadeira([0.29, 0.18, 0.13, 1])">Imbuia</button>
+                <button style="background:#1c1c1c;" onclick="aplicarMadeira([0.11, 0.11, 0.11, 1])">Laca Preta</button>
             </div>
         </div>
     </div>
@@ -100,18 +127,44 @@
     <script>
         const modelViewer = document.querySelector('#configurador');
 
-        function mudarCor(nomeMaterial, rgba) {
+        // Loga os nomes dos materiais no console (F12) sempre que um modelo carrega
+        modelViewer.addEventListener('load', () => {
+            console.log('Materiais detectados neste modelo:', modelViewer.model.materials.map(m => m.name));
+        });
+
+        function selecionarModelo(arquivoGlb, nomeExibicao, botaoClicado) {
+            modelViewer.src = arquivoGlb;
+            document.getElementById('titulo-produto').innerText = 'Configurador 3D - ' + nomeExibicao;
+
+            document.querySelectorAll('.btn-modelo').forEach(btn => btn.classList.remove('ativo'));
+            botaoClicado.classList.add('ativo');
+        }
+
+        function aplicarTecido(rgba) {
             if (!modelViewer.model) return;
-            const material = modelViewer.model.materials.find(m => m.name === nomeMaterial);
-            if (material) {
-                material.pbrMetallicRoughness.setBaseColorFactor(rgba);
+            const materiais = modelViewer.model.materials;
+
+            // Procura por nome específico ou pega o primeiro material principal ('*' ou índice 0)
+            const tecido = materiais.find(m => m.name === '*' || m.name.toLowerCase().includes('tecido') || m.name.toLowerCase().includes('boucle')) || materiais[0];
+            if (tecido) {
+                tecido.pbrMetallicRoughness.setBaseColorFactor(rgba);
             }
         }
 
-        function mudarMadeira(rgba) {
-            // Aplica nos dois slots de madeira mapeados no bloco do SketchUp
-            mudarCor('*1', rgba);
-            mudarCor('*2', rgba);
+        function aplicarMadeira(rgba) {
+            if (!modelViewer.model) return;
+            const materiais = modelViewer.model.materials;
+
+            // Aplica em todos os slots que não sejam o tecido principal nem o plástico dos pés
+            materiais.forEach((m, index) => {
+                const nome = m.name.toLowerCase();
+                const isPlastico = nome.includes('plastic');
+                const isTecido = m.name === '*' || nome.includes('tecido') || nome.includes('boucle') || (index === 0 && !nome.includes('tauari') && !nome.includes('madeira'));
+
+                if (!isPlastico && !isTecido) {
+                    m.pbrMetallicRoughness.setBaseColorFactor(rgba);
+                }
+            });
         }
     </script>
 
